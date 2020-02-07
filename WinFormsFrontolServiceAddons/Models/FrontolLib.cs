@@ -1,5 +1,4 @@
 ﻿using FirebirdSql.Data.FirebirdClient;
-using FtpClient;
 using Ionic.Zip;
 using System;
 using System.Collections.Generic;
@@ -149,20 +148,20 @@ namespace FrontolServiceAddon
                 zip.Save(appPatch + "\\" + filenamesprt + ".zip"); // Создаем архив     
             }
 
-            Logger.Log.Info("Завершение архивации, выгрузка файла FTP на сервер");            
+            Logger.Log.Info("Завершение архивации, выгрузка файла FTP на сервер");
 
-            Client client = new Client(addres, login, password);
-            client.UploadFile(appPatch + "\\" + filenamesprt + ".zip", ftpfolder + "/" + filenamesprt + ".zip");
+            FtpClient ftpClient = new FtpClient(addres, login, password);
+            ftpClient.UploadFile(appPatch + "\\" + filenamesprt + ".zip", ftpfolder + "/" + filenamesprt + ".zip");
 
             Logger.Log.Info("Завершение выгрузки в офис");
         }
 
         public string UploadFileSprt(string Path)
         {
-            Client client = new Client(addres, login, password);
-            //client.Passive = false;
+            FtpClient ftpClient = new FtpClient(addres, login, password);
+            //ftpClient.Passive = false;
 
-            return client.UploadFile(Path + "\\" + filenamesprt + ".zip", ftpfolder + "/" + filenamesprt + ".zip");
+            return ftpClient.UploadFile(Path + "\\" + filenamesprt + ".zip", ftpfolder + "/" + filenamesprt + ".zip");
         }
 
 

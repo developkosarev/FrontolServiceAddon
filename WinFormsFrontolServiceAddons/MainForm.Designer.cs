@@ -30,44 +30,36 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.lbLog = new System.Windows.Forms.ListBox();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.showWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-            this.Timer1 = new System.Windows.Forms.Timer(this.components);
-            this.bbGroup = new System.Windows.Forms.Button();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.bbCancel = new System.Windows.Forms.Button();
-            this.resultLabel = new System.Windows.Forms.Label();
-            this.bbFTPUpload = new System.Windows.Forms.Button();
-            this.ButtonExecute = new System.Windows.Forms.Button();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.timerMain = new System.Windows.Forms.Timer(this.components);
+            this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.menuMain = new System.Windows.Forms.MenuStrip();
             this.mainMenuItemFile = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenuItemExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.mainMenuItemOperations = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemExecute = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemCancel = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenuItemProfile = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextMenuStrip1.SuspendLayout();
+            this.mainMenuItemHelp = new System.Windows.Forms.ToolStripMenuItem();
+            this.MainMenuItemMakeUpdateFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.contextMenuStrip.SuspendLayout();
             this.menuMain.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // lbLog
+            // contextMenuStrip
             // 
-            this.lbLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lbLog.FormattingEnabled = true;
-            this.lbLog.Location = new System.Drawing.Point(12, 27);
-            this.lbLog.Name = "lbLog";
-            this.lbLog.Size = new System.Drawing.Size(226, 121);
-            this.lbLog.TabIndex = 1;
-            // 
-            // contextMenuStrip1
-            // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.showWindowToolStripMenuItem,
             this.exitToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(224, 48);
+            this.contextMenuStrip.Name = "contextMenuStrip1";
+            this.contextMenuStrip.Size = new System.Drawing.Size(224, 48);
             // 
             // showWindowToolStripMenuItem
             // 
@@ -83,86 +75,33 @@
             this.exitToolStripMenuItem.Text = "Выход";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
-            // notifyIcon1
+            // notifyIcon
             // 
-            this.notifyIcon1.Text = "notifyIcon1";
-            this.notifyIcon1.Visible = true;
+            this.notifyIcon.Text = "notifyIcon";
+            this.notifyIcon.Visible = true;
             // 
-            // Timer1
+            // timerMain
             // 
-            this.Timer1.Enabled = true;
-            this.Timer1.Interval = 60000;
-            this.Timer1.Tick += new System.EventHandler(this.Timer1_Tick);
+            this.timerMain.Interval = 60000;
+            this.timerMain.Tick += new System.EventHandler(this.timerMain_Tick);
             // 
-            // bbGroup
+            // backgroundWorker
             // 
-            this.bbGroup.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bbGroup.Location = new System.Drawing.Point(244, 98);
-            this.bbGroup.Name = "bbGroup";
-            this.bbGroup.Size = new System.Drawing.Size(75, 23);
-            this.bbGroup.TabIndex = 4;
-            this.bbGroup.Text = "Свернуть";
-            this.bbGroup.UseVisualStyleBackColor = true;
-            this.bbGroup.Click += new System.EventHandler(this.bbGroup_Click);
-            // 
-            // backgroundWorker1
-            // 
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
-            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
-            // 
-            // bbCancel
-            // 
-            this.bbCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bbCancel.Location = new System.Drawing.Point(244, 125);
-            this.bbCancel.Name = "bbCancel";
-            this.bbCancel.Size = new System.Drawing.Size(75, 23);
-            this.bbCancel.TabIndex = 5;
-            this.bbCancel.Text = "Отмена";
-            this.bbCancel.UseVisualStyleBackColor = true;
-            this.bbCancel.Click += new System.EventHandler(this.bbCancel_Click);
-            // 
-            // resultLabel
-            // 
-            this.resultLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.resultLabel.Location = new System.Drawing.Point(12, 154);
-            this.resultLabel.Name = "resultLabel";
-            this.resultLabel.Size = new System.Drawing.Size(307, 14);
-            this.resultLabel.TabIndex = 6;
-            this.resultLabel.Text = "0%";
-            // 
-            // bbFTPUpload
-            // 
-            this.bbFTPUpload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bbFTPUpload.Enabled = false;
-            this.bbFTPUpload.Location = new System.Drawing.Point(244, 52);
-            this.bbFTPUpload.Name = "bbFTPUpload";
-            this.bbFTPUpload.Size = new System.Drawing.Size(75, 23);
-            this.bbFTPUpload.TabIndex = 3;
-            this.bbFTPUpload.Text = "Отправить на FTP";
-            this.bbFTPUpload.UseVisualStyleBackColor = true;
-            this.bbFTPUpload.Click += new System.EventHandler(this.FTPUpload_Click);
-            // 
-            // ButtonExecute
-            // 
-            this.ButtonExecute.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ButtonExecute.Enabled = false;
-            this.ButtonExecute.Location = new System.Drawing.Point(244, 27);
-            this.ButtonExecute.Name = "ButtonExecute";
-            this.ButtonExecute.Size = new System.Drawing.Size(75, 23);
-            this.ButtonExecute.TabIndex = 0;
-            this.ButtonExecute.Text = "Выполнить";
-            this.ButtonExecute.UseVisualStyleBackColor = true;
-            this.ButtonExecute.Click += new System.EventHandler(this.ButtonExecute_Click);
+            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker_DoWork);
+            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker_ProgressChanged);
+            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
             // 
             // menuMain
             // 
             this.menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mainMenuItemFile,
-            this.mainMenuItemProfile});
+            this.mainMenuItemOperations,
+            this.mainMenuItemProfile,
+            this.mainMenuItemHelp});
             this.menuMain.Location = new System.Drawing.Point(0, 0);
             this.menuMain.Name = "menuMain";
-            this.menuMain.Size = new System.Drawing.Size(322, 24);
+            this.menuMain.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.menuMain.Size = new System.Drawing.Size(324, 24);
             this.menuMain.TabIndex = 7;
             this.menuMain.Text = "mainMenu";
             // 
@@ -181,6 +120,30 @@
             this.mainMenuItemExit.Text = "Выход";
             this.mainMenuItemExit.Click += new System.EventHandler(this.MainMenuItemExit_Click);
             // 
+            // mainMenuItemOperations
+            // 
+            this.mainMenuItemOperations.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolStripMenuItemExecute,
+            this.ToolStripMenuItemCancel});
+            this.mainMenuItemOperations.Name = "mainMenuItemOperations";
+            this.mainMenuItemOperations.Size = new System.Drawing.Size(75, 20);
+            this.mainMenuItemOperations.Text = "Операции";
+            // 
+            // ToolStripMenuItemExecute
+            // 
+            this.ToolStripMenuItemExecute.Name = "ToolStripMenuItemExecute";
+            this.ToolStripMenuItemExecute.Size = new System.Drawing.Size(181, 22);
+            this.ToolStripMenuItemExecute.Text = "Выполнить свертку";
+            this.ToolStripMenuItemExecute.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.ToolStripMenuItemExecute.Click += new System.EventHandler(this.ToolStripMenuItemExecute_Click);
+            // 
+            // ToolStripMenuItemCancel
+            // 
+            this.ToolStripMenuItemCancel.Name = "ToolStripMenuItemCancel";
+            this.ToolStripMenuItemCancel.Size = new System.Drawing.Size(181, 22);
+            this.ToolStripMenuItemCancel.Text = "Отменить свертку";
+            this.ToolStripMenuItemCancel.Click += new System.EventHandler(this.ToolStripMenuItemCancel_Click);
+            // 
             // mainMenuItemProfile
             // 
             this.mainMenuItemProfile.Name = "mainMenuItemProfile";
@@ -188,49 +151,89 @@
             this.mainMenuItemProfile.Text = "Настройки";
             this.mainMenuItemProfile.Click += new System.EventHandler(this.MainMenuItemProfile_Click);
             // 
+            // mainMenuItemHelp
+            // 
+            this.mainMenuItemHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MainMenuItemMakeUpdateFile});
+            this.mainMenuItemHelp.Name = "mainMenuItemHelp";
+            this.mainMenuItemHelp.Size = new System.Drawing.Size(44, 20);
+            this.mainMenuItemHelp.Text = "Help";
+            // 
+            // MainMenuItemMakeUpdateFile
+            // 
+            this.MainMenuItemMakeUpdateFile.Name = "MainMenuItemMakeUpdateFile";
+            this.MainMenuItemMakeUpdateFile.Size = new System.Drawing.Size(165, 22);
+            this.MainMenuItemMakeUpdateFile.Text = "Make Update File";
+            this.MainMenuItemMakeUpdateFile.Click += new System.EventHandler(this.MainMenuItemMakeUpdateFile_Click);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripProgressBar1,
+            this.toolStripStatusLabel1});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 98);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(324, 22);
+            this.statusStrip1.TabIndex = 8;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripProgressBar1
+            // 
+            this.toolStripProgressBar1.AccessibleDescription = "";
+            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            this.toolStripProgressBar1.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 16);
+            this.toolStripProgressBar1.Tag = "";
+            this.toolStripProgressBar1.Visible = false;
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(322, 177);
+            this.ClientSize = new System.Drawing.Size(324, 120);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuMain);
-            this.Controls.Add(this.resultLabel);
-            this.Controls.Add(this.bbCancel);
-            this.Controls.Add(this.bbGroup);
-            this.Controls.Add(this.bbFTPUpload);
-            this.Controls.Add(this.lbLog);
-            this.Controls.Add(this.ButtonExecute);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuMain;
             this.Name = "MainForm";
             this.Text = "Свертка остатков";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
-            this.contextMenuStrip1.ResumeLayout(false);
+            this.contextMenuStrip.ResumeLayout(false);
             this.menuMain.ResumeLayout(false);
             this.menuMain.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.ListBox lbLog;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem showWindowToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.NotifyIcon notifyIcon1;
-        private System.Windows.Forms.Timer Timer1;
-        private System.Windows.Forms.Button bbGroup;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.Windows.Forms.Button bbCancel;
-        private System.Windows.Forms.Label resultLabel;
-        private System.Windows.Forms.Button bbFTPUpload;
-        private System.Windows.Forms.Button ButtonExecute;
+        private System.Windows.Forms.NotifyIcon notifyIcon;
+        private System.Windows.Forms.Timer timerMain;
+        private System.ComponentModel.BackgroundWorker backgroundWorker;
         private System.Windows.Forms.MenuStrip menuMain;
         private System.Windows.Forms.ToolStripMenuItem mainMenuItemFile;
         private System.Windows.Forms.ToolStripMenuItem mainMenuItemExit;
         private System.Windows.Forms.ToolStripMenuItem mainMenuItemProfile;
+        private System.Windows.Forms.ToolStripMenuItem mainMenuItemOperations;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemExecute;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemCancel;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripMenuItem mainMenuItemHelp;
+        private System.Windows.Forms.ToolStripMenuItem MainMenuItemMakeUpdateFile;
     }
 }
 

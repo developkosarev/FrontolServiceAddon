@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
-namespace FtpClient
+namespace FrontolServiceAddon
 {
-    public class Client
+    public class FtpClient
     {
         private string password;
         private string userName;
@@ -17,7 +17,7 @@ namespace FtpClient
         public bool EnableSsl = false;
         public bool Hash = false;
 
-        public Client(string uri, string userName, string password)
+        public FtpClient(string uri, string userName, string password)
         {
             this.uri = uri;
             this.userName = userName;

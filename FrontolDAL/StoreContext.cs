@@ -12,10 +12,12 @@ namespace FrontolService.DAL
 
         //fb ссылается на соединение с нашей базой данных, по-этому она должна быть доступна всем методам нашего класса
         private FbConnection fb;
-        private FbConnectionStringBuilder fb_con;
-        //private string _connectionString;
 
         private List<Remain> remains;
+
+        public string Database { get; set; } = string.Empty;
+        public string User { get; set; } = "SYSDBA";
+        public string Password { get; set; } = "masterkey";
 
         #endregion
 
@@ -42,30 +44,66 @@ namespace FrontolService.DAL
 
         #endregion
 
+        #region Constructors
         public StoreContext()
         {
-            fb = new FbConnection();
-            fb_con = new FbConnectionStringBuilder();
+            fb = new FbConnection();            
 
             remains = new List<Remain>();
         }
 
-        public void OpenConnection()
-        {            
-            fb_con.Charset = "WIN1251"; //используемая кодировка
-            fb_con.UserID = "SYSDBA"; //логин
-            fb_con.Password = "masterkey"; //пароль
-            fb_con.Database = @"d:\DBFrontol\MAIN_test.GDB"; //путь к файлу базы данных            
-            fb_con.ServerType = 0; //указываем тип сервера (0 - "полноценный Firebird" (classic или super server), 1 - встроенный (embedded))
+        public StoreContext(string database)
+            : this()
+        {
+            Database = database;            
+        }
 
-            //создаем подключение
-            fb.ConnectionString = fb_con.ToString();            
-            fb.Open(); //открываем БД                        
+        public StoreContext(string database, string user, string password) : this(database)
+        {            
+            User = user;
+            Password = password;
+        }
+
+        #endregion
+
+        private string GetConnection()
+        {
+            FbConnectionStringBuilder fb_con = new FbConnectionStringBuilder();
+
+            fb_con.Charset = "WIN1251";
+            fb_con.UserID = User;
+            fb_con.Password = Password;
+            fb_con.Database = Database;
+            fb_con.ServerType = 0;
+
+            return fb_con.ToString();
+        }
+
+        public void OpenConnection()
+        {                                    
+            fb.ConnectionString = GetConnection();
+            fb.Open();
         }
 
         public void CloseConnection()
         {
             fb.Close();
+        }
+
+        public bool IsAvailable()
+        {
+            try
+            {
+                fb.ConnectionString = GetConnection();                
+                fb.Open();
+                fb.Close();
+            }
+            catch (FbException)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public List<StocksResult> GetAllStocksResults()
@@ -79,22 +117,34 @@ namespace FrontolService.DAL
                            GROUP BY Sprt.mark, Sprt.name, Sprt.MinPrice, PriceData.Price, RD.REMAINID
                            order by NAME";
 
-            using (FbTransaction fbt = fb.BeginTransaction())  //стартуем транзакцию; стартовать транзакцию можно только для открытой базы (т.е. мутод Open() уже был вызван ранее, иначе ошибка)
+            using (FbTransaction fbt = fb.BeginTransaction())
             {
-                using (FbCommand selectSQL = new FbCommand(sql, fb, fbt)) //задаем запрос на выборку
+                using (FbCommand selectSQL = new FbCommand(sql, fb, fbt))
                 {
-                    FbDataReader reader = selectSQL.ExecuteReader(); //для запросов, которые возвращают результат в виде набора данных надо использоваться метод ExecuteReader()
+                    FbDataReader reader = selectSQL.ExecuteReader();
 
-                    while (reader.Read()) //пока не прочли все данные выполняем...
-                    {                    
+                    double minPrice = 0;
+
+                    while (reader.Read())
+                    {
+                        minPrice = 0;
+
+                        try {
+                            minPrice = (double)reader["MinPrice"];
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+
                         stocksResult.Add(new StocksResult
                         {
-                            Code = (string)reader["mark"],
-                            Name = (string)reader["name"],
+                            Code = reader["mark"].ToString(),
+                            Name = reader["name"].ToString(),
                             Price = (double)reader["Price"],
                             Summa0 = (double)reader["SUMMA0"],
                             Summa1 = (double)reader["SUMMA1"],
-                            MinPrice = (double)reader["MinPrice"]
+                            MinPrice = minPrice
                         });
                     }
 
@@ -103,7 +153,7 @@ namespace FrontolService.DAL
 
                 fbt.Commit();
             }
-            
+
             return stocksResult;
         }
 
@@ -145,13 +195,13 @@ namespace FrontolService.DAL
         }
 
         private void GetAllRemain()
-        {
+        {            
             remains.Clear();
 
             string sql = @"SELECT FIRST 10 REMAINID, SUM(IIF(DTYPE = 0, DELTA, 0))AS SUMMA0, SUM(IIF(DTYPE = 1, DELTA, 0)) AS SUMMA1
                            FROM REMAIND RD
                            GROUP BY REMAINID
-                           HAVING COUNT(ID) > 1";
+                           HAVING COUNT(ID) > 4";
 
             using (FbTransaction fbt = fb.BeginTransaction())
             {
@@ -160,10 +210,10 @@ namespace FrontolService.DAL
                     FbDataReader reader = selectSQL.ExecuteReader();
 
                     while (reader.Read())
-                    {
+                    {                        
                         remains.Add(new Remain
                         {
-                            RemainId = (string)reader["REMAINID"],                            
+                            RemainId = reader["REMAINID"].ToString(),
                             Summa0 = (double)reader["SUMMA0"],
                             Summa1 = (double)reader["SUMMA1"]                            
                         });
@@ -220,13 +270,31 @@ namespace FrontolService.DAL
 
             using (FbTransaction fbt = fb.BeginTransaction())  //стартуем транзакцию; стартовать транзакцию можно только для открытой базы (т.е. мутод Open() уже был вызван ранее, иначе ошибка)
             {
-                using (FbCommand deleteSQL = new FbCommand(sql, fb, fbt)) //задаем запрос на выборку
+                using (FbCommand deleteSQL = new FbCommand(sql, fb, fbt))
                 {
                     deleteSQL.ExecuteNonQuery();
                 };
 
                 fbt.Commit();
             }            
+        }
+
+        public int DeleteReports()
+        {
+            int result;
+            string sql = @"DELETE FROM REPORTS WHERE REPDATE < '01.01.2020'";
+
+            using (FbTransaction fbt = fb.BeginTransaction())
+            {
+                using (FbCommand deleteSQL = new FbCommand(sql, fb, fbt))
+                {
+                    result = deleteSQL.ExecuteNonQuery();
+                };
+
+                fbt.Commit();
+            }
+
+            return result;
         }
 
     }

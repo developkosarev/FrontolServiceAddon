@@ -10,92 +10,86 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ionic.Zip;
-using FtpClient;
 
 using System.Net;
+using FrontolService.DAL;
+using SharpUpdate;
+using System.Reflection;
 
 namespace FrontolServiceAddon
 {
     public partial class MainForm : Form
     {
+        #region Fields
+
         private bool closing = true;
         private string CommandLineArg1 = "";
-        private FrontolLib frontollib;
+        //private FrontolLib frontollib;                
+        private UploadFacade uploadFacade;
+        private StoreContext storeContext;
+
+        private SharpUpdater updater;
+        private static String exe_dir = Directory.GetCurrentDirectory();
+        private static String exe_path = Path.Combine(exe_dir, @"FrontolServiceAddon.exe");
+
+        #endregion
+
+        #region Constructors
 
         public MainForm()
         {
             InitializeComponent();
 
-            notifyIcon1 = new NotifyIcon();
-            //notifyIcon1.Icon = SystemIcons.Asterisk;            
-            notifyIcon1.Icon = Properties.Resources.MainIcon;
-            notifyIcon1.Visible = true;            
-            notifyIcon1.Click += NotifyIcon1_Click;
-            notifyIcon1.BalloonTipClicked += NotifyIcon1_BalloonTipClicked;
-            notifyIcon1.ContextMenuStrip = contextMenuStrip1;
+            Logger.InitLogger();//инициализация - требуется один раз в начале
+            Logger.Log.Info("Запуск программы!");
 
-            backgroundWorker1.WorkerReportsProgress = true;
-            backgroundWorker1.WorkerSupportsCancellation = true;
+            notifyIcon = new NotifyIcon();            
+            notifyIcon.Icon = Properties.Resources.MainIcon;
+            notifyIcon.Visible = true;            
+            notifyIcon.Click += NotifyIcon_Click;
+            notifyIcon.BalloonTipClicked += NotifyIcon_BalloonTipClicked;
+            notifyIcon.ContextMenuStrip = contextMenuStrip;
+
+            backgroundWorker.WorkerReportsProgress = true;
+            backgroundWorker.WorkerSupportsCancellation = true;
 
             SettingsService.ReadSettings();
 
-            frontollib = new FrontolLib();
+            //frontollib = new FrontolLib();            
+            uploadFacade = new UploadFacade();
+            storeContext = new StoreContext(SettingsService.FirebirdSettings.Database, SettingsService.FirebirdSettings.Login, SettingsService.FirebirdSettings.Password);
 
-            Logger.InitLogger();//инициализация - требуется один раз в начале
-            Logger.Log.Info("Запуск программы!");            
+            this.Text = this.Text + " " + ProductVersion;
+
+            updater = new SharpUpdater(Assembly.GetExecutingAssembly(), this, new Uri("http://frontol.chance-ltd.ru/FrontolServiceAddon/FrontolServiceAddon.xml"));
+            updater.DoUpdate();
+
+            timerMain.Enabled = true;
         }
 
-        #region form
+        #endregion
 
-        private void NotifyIcon1_BalloonTipClicked(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
-            MessageBox.Show("Вы нажали на подсказку");
-        }
+        #region Form
 
-        private void NotifyIcon1_Click(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
-            MouseEventArgs me = (MouseEventArgs)e;
-            if (me.Button == MouseButtons.Left) {
-                MessageBox.Show("Вы нажали на значек программы");
-                this.Show();
-            }
-        }
-
-        
         private void MainForm_Shown(object sender, EventArgs e)
         {
-
             string[] keys = Environment.GetCommandLineArgs();
 
             if (keys.Length > 1)
-                if (keys[1] == "/u")
+                if (keys[1] == "/q")
                 {
+                    CommandLineArg1 = keys[1];                    
 
-                    CommandLineArg1 = keys[1];
-
-                    //ButtonExecute_Click(ButtonExecute, null);
-
-                    //this.Close();
+                    this.Close();
                 }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            //System.Text.StringBuilder messageBoxCS = new System.Text.StringBuilder();
-            //messageBoxCS.AppendFormat("{0} = {1}", "CloseReason", e.CloseReason);
-            //messageBoxCS.AppendLine();
-            //messageBoxCS.AppendFormat("{0} = {1}", "Cancel", e.Cancel);
-            //messageBoxCS.AppendLine();            
-
-            //Logger.Log.Info( messageBoxCS.ToString() );
-
-
-            if (System.Environment.MachineName == "ICORE7")
+        {            
+            if (System.Diagnostics.Debugger.IsAttached) 
             {
                 return;
-            }
+            };                        
 
             if (e.CloseReason == CloseReason.UserClosing)
             {
@@ -104,73 +98,88 @@ namespace FrontolServiceAddon
             }
         }
 
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            notifyIcon.Visible = false;
+            notifyIcon.Dispose();
+        }
+
+        #endregion
+
+        #region NotifyIcon
+
+        private void NotifyIcon_BalloonTipClicked(object sender, EventArgs e)
+        {            
+            MessageBox.Show("Вы нажали на подсказку");
+        }
+
+        private void NotifyIcon_Click(object sender, EventArgs e)
+        {            
+            MouseEventArgs me = (MouseEventArgs)e;
+            if (me.Button == MouseButtons.Left) {
+                MessageBox.Show("Вы нажали на значек программы");
+                this.Show();
+            }
+        }
+                
         private void ShowWindowToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Show();
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            closing = false;
+        {            
+            closing = false;            
             Application.Exit();
         }
 
         #endregion
 
+        #region Menu
 
-        private void ButtonExecute_Click(object sender, EventArgs e)
+        private void MainMenuItemExit_Click(object sender, EventArgs e)
+        {            
+            Application.Exit();
+        }
+
+        private void MainMenuItemProfile_Click(object sender, EventArgs e)
         {
-            Logger.Log.Info("Запуск выгрузки в офис");
+            ProfileForm newForm = new ProfileForm();
+            newForm.ShowDialog(this);
+        }
 
-            notifyIcon1.BalloonTipTitle = "Выгрузка";
-            notifyIcon1.BalloonTipText = "Выгрузка данных в офис";
-            notifyIcon1.ShowBalloonTip(30);            
+        private void MainMenuItemMakeUpdateFile_Click(object sender, EventArgs e)
+        {
+            string location = exe_path.Replace(".exe", ".xml");
+            Uri uriFolder = new Uri("http://frontol.chance-ltd.ru/FrontolServiceAddon/");
 
-            
-            if (!frontollib.DbExist)
+            List<string> files = new List<string>
             {
-                Logger.Log.Info("Не найден файл базы данных");
-            }
+                "FrontolServiceAddon.exe",
+                "FrontolService.DAL.dll",
+                "SharpUpdate.dll"
+            };
 
-            frontollib.CreateFileSprt(Application.StartupPath.ToString());
-
-            //Close forms            
-            if (CommandLineArg1 == "/u")
-            {
-                Application.Exit();
-            }
+            SharpUpdateXml.SaveSharpUpdateXml(location, uriFolder, files);
 
         }
-        
-        private void FTPUpload_Click(object sender, EventArgs e)
+
+        #endregion
+
+        #region Events
+
+        #region Timers
+
+        private void timerMain_Tick(object sender, EventArgs e)
         {
-            string result = "";
-
-            try
-            {
-                result = frontollib.UploadFileSprt(Application.StartupPath.ToString());
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString() + ": \n" + ex.Message);
-            }
-
-            lbLog.Items.Add(result);
-        }
-        
-
-        private void Timer1_Tick(object sender, EventArgs e)
-        {
-
             Logger.Log.Info("Start timer");
 
             if (System.Environment.MachineName == "ICORE7")
             {
                 //return;
             }
-            
 
-            string filenamesprt = frontollib.filenamesprt;
+            string filenamesprt = uploadFacade.sprtFile; //frontollib.filenamesprt;
             FileInfo fileInf = new FileInfo(Application.StartupPath.ToString() + "\\" + filenamesprt + ".zip");
 
             if (fileInf.Exists)
@@ -182,92 +191,56 @@ namespace FrontolServiceAddon
 
                 if (fileInf.LastWriteTime.AddHours(6) < DateTime.Now) //Файл создан более 6 часов назад
                 {
-                    bbGroup_Click(bbGroup, null);
-
-                    //lbLog.Items.Add("Необходимо выгрузить файл");
-                    //ButtonExecute_Click(ButtonExecute, null);
+                    RunWorker();
                 }
             }
             else {
-                bbGroup_Click(bbGroup, null);
-
-                //ButtonExecute_Click(ButtonExecute, null);
+                RunWorker();
             }
 
             Logger.Log.Info("Finish timer");
-
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        #endregion
+
+        #region BackgroundWorker
+
+        private void RunWorker()
         {
-
-            //    // открываем нужную ветку в реестре 
-            //    // @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run\"
-
-            //    Microsoft.Win32.RegistryKey Key =
-            //       Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-            //       "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
-
-            //    //добавляем первый параметр - название ключа
-            //    // Второй параметр - это путь к 
-            //    // исполняемому файлу нашей программы.
-            //    Key.SetValue("myapp", "D:\\myapp.exe");
-            //    Key.Close();
-
-            //private void button1_Click(object sender, EventArgs e)
-            //{
-            //    // открываем нужную ветку в реестре 
-            //    // @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run\"
-
-            //    Microsoft.Win32.RegistryKey Key =
-            //       Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-            //       "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
-
-            //    //добавляем первый параметр - название ключа
-            //    // Второй параметр - это путь к 
-            //    // исполняемому файлу нашей программы.
-            //    Key.SetValue("myapp", "D:\\myapp.exe");
-            //    Key.Close();
-            //}
-
-            //Теперь рассмотрим код кнопки для удаления программы из автозапуска:
-            //private void button2_Click(object sender, EventArgs e)
-            //{
-            //    //удаляем
-            //    Microsoft.Win32.RegistryKey key =
-            //       Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-            //       "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            //    key.DeleteValue("DoLinqToSql", false);
-            //    key.Close();
-            //}
-
-
-        }
-
-
-        #region Group
-
-        private void bbGroup_Click(object sender, EventArgs e)
-        {
-            if (backgroundWorker1.IsBusy != true)
+            if (backgroundWorker.IsBusy != true)
             {
                 // Start the asynchronous operation.
-                backgroundWorker1.RunWorkerAsync();
+                backgroundWorker.RunWorkerAsync();                                
             }
         }
 
-        private void bbCancel_Click(object sender, EventArgs e)
+        private void CancelWorker()
         {
-            if (backgroundWorker1.WorkerSupportsCancellation == true)
+            if (backgroundWorker.WorkerSupportsCancellation == true)
             {
                 // Cancel the asynchronous operation.
-                backgroundWorker1.CancelAsync();
+                backgroundWorker.CancelAsync();
             }
         }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        private void ToolStripMenuItemExecute_Click(object sender, EventArgs e)
+        {
+            RunWorker();
+            
+            ToolStripMenuItemExecute.Enabled = false;
+            toolStripProgressBar1.Visible = true;
+        }
+
+        private void ToolStripMenuItemCancel_Click(object sender, EventArgs e)
+        {
+            CancelWorker();
+        }
+        
+        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
+
+            storeContext.OpenConnection();
 
             for (int i = 1; i <= 1000; i++)
             {
@@ -279,61 +252,77 @@ namespace FrontolServiceAddon
                 else
                 {
                     //Logger.Log.Info("Старт итерации " + String.Format("{0:d}", i));
-                    frontollib.FillListRemain();
+                    //frontollib.FillListRemain();
+                    
+                    storeContext.DeleteRemain();                    
+
                     //Logger.Log.Info("Конец итерации " + String.Format("{0:d}", i));
 
+                    worker.ReportProgress(i / 10);
 
-                    // Perform a time consuming operation and report progress.
-                    //System.Threading.Thread.Sleep(500);
-                    //worker.ReportProgress(i * 10);
-                    worker.ReportProgress(i/10);
+                    if (i % 10 == 0)
+                    {
+                        Logger.Log.Info("Конец итерации " + (i /10) + "% ");
+                    }
                 }
             }
 
-            //Выгрузка файла остатков
-            frontollib.CreateFileSprt(Application.StartupPath.ToString());
+            storeContext.CloseConnection();
 
-            //Удалить свертку
-            frontollib.RemoveRemaindCollapsed();
+            if (!e.Cancel) {
+                Logger.Log.Info("Старт выгрузки UploadFileSprt");
+                uploadFacade.UploadFileSprt(Application.StartupPath.ToString());
+                Logger.Log.Info("Финиш выгрузки UploadFileSprt");
+
+                storeContext.OpenConnection();
+                storeContext.DeleteRemaindCollapsed();
+                storeContext.DeleteReports();
+                storeContext.CloseConnection();
+
+
+                //Выгрузка файла остатков
+                //frontollib.CreateFileSprt(Application.StartupPath.ToString());
+
+                //Удалить свертку
+                //frontollib.RemoveRemaindCollapsed();
+            }
         }
 
-        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            resultLabel.Text = (e.ProgressPercentage.ToString() + "%");
+        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {            
+            toolStripStatusLabel1.Text = (e.ProgressPercentage.ToString() + "%");
+
+            toolStripProgressBar1.Value = e.ProgressPercentage;
+            toolStripProgressBar1.ToolTipText = e.ProgressPercentage.ToString() + "%";
         }
 
-        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Cancelled == true)
-            {
-                resultLabel.Text = "Canceled!";
+            {                
+                toolStripStatusLabel1.Text = "Canceled!";
             }
             else if (e.Error != null)
             {
-                resultLabel.Text = "Error: " + e.Error.Message;
+                toolStripStatusLabel1.Text = "Error: " + e.Error.Message;                
             }
             else
             {
-                resultLabel.Text = "Done!";
+                toolStripStatusLabel1.Text = "Done!";                
+
+                notifyIcon.BalloonTipTitle = "Завершение свертки";
+                notifyIcon.BalloonTipText = "Завершена свертка";
+                notifyIcon.ShowBalloonTip(30);
             }
+
+            ToolStripMenuItemExecute.Enabled = true;
+            toolStripProgressBar1.Visible = false;
+            toolStripProgressBar1.Value = 0;
         }
 
         #endregion
 
-        #region Menu
+        #endregion
         
-        private void MainMenuItemExit_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        private void MainMenuItemProfile_Click(object sender, EventArgs e)
-        {
-            ProfileForm newForm = new ProfileForm();
-            newForm.ShowDialog(this);
-        }
-
-        #endregion
-
     }
 }
