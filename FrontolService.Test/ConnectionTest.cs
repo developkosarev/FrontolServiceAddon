@@ -1,4 +1,5 @@
 ﻿using FrontolService.DAL;
+using FrontolService.Test;
 using System;
 using System.Text;
 using Xunit;
@@ -6,16 +7,12 @@ using Xunit;
 namespace FrontolService.Tests
 {
     public class ConnectionTest
-    {
-        internal const string Database = @"D:\DBFrontol\MAIN_test.GDB";
-        internal const string UserID = "SYSDBA";
-        internal const string Password = "masterkey";
-
-        internal StoreContext storeContext;
+    {                
+        private StoreContext storeContext;
 
         public ConnectionTest()
-        {
-            storeContext = new StoreContext(Database);
+        {            
+            storeContext = new StoreContext(TestsSetup.Database());
         }
 
         [Fact]
@@ -29,7 +26,6 @@ namespace FrontolService.Tests
         [Fact]
         public void DeleteReportsTest()
         {
-
             storeContext.OpenConnection();
             int result = storeContext.DeleteReports();
             storeContext.CloseConnection();

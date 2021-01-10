@@ -342,3 +342,6 @@ healthchecksdb
 WpfFormsFrontolServiceAddons/
 TestBackgroundWorker/
 MYHELP.md
+
+# Firebird Server files
+*.GDB

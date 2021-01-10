@@ -1,31 +1,39 @@
 ﻿using FrontolServiceAddon;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace FrontolService.Test
 {
     public class FtpClientTest
-    {
+    {        
         internal const string Url = @"localhost";
         internal const string User = "anonymous";
         internal const string Password = "anonymous";
-
+        
         internal FtpClient ftpClient;
 
-        public FtpClientTest()
+        private readonly ITestOutputHelper output;
+
+        public FtpClientTest(ITestOutputHelper output)
         {
             ftpClient = new FtpClient("ftp://localhost/", User, Password);
+            this.output = output;
         }
 
         [Fact]
         public void ConnectTest()
         {
-            string sourceZipFile = @"D:\MyProgram\CCharp\FrontolServiceAddon\src\WinFormsFrontolServiceAddons\bin\Debug\sprt.zip";
+            string exe_dir = Directory.GetCurrentDirectory();
+            output.WriteLine("This is output from {0}", exe_dir);
+            
+            string sourceZipFile = Path.Combine(exe_dir, @"log4net.xml");            
             string destinationZipFile = "sprt.zip";
 
             string result = ftpClient.UploadFile(sourceZipFile, destinationZipFile);
