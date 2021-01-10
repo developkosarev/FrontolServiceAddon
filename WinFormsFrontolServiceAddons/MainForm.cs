@@ -75,13 +75,23 @@ namespace FrontolServiceAddon
         {
             string[] keys = Environment.GetCommandLineArgs();
 
-            if (keys.Length > 1)
+            if (keys.Length > 1) { 
                 if (keys[1] == "/q")
                 {
                     CommandLineArg1 = keys[1];                    
 
                     this.Close();
                 }
+
+                if (keys[1] == "/u")
+                {
+                    CommandLineArg1 = keys[1];
+
+                    CreateUpdateFile();
+
+                    Application.Exit();
+                }
+            }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -141,27 +151,11 @@ namespace FrontolServiceAddon
         {            
             Application.Exit();
         }
-
-        private void MainMenuItemProfile_Click(object sender, EventArgs e)
+        
+        private void mainMenuItemProfile_Click(object sender, EventArgs e)
         {
             ProfileForm newForm = new ProfileForm();
             newForm.ShowDialog(this);
-        }
-
-        private void MainMenuItemMakeUpdateFile_Click(object sender, EventArgs e)
-        {
-            string location = exe_path.Replace(".exe", ".xml");
-            Uri uriFolder = new Uri("http://frontol.chance-ltd.ru/FrontolServiceAddon/");
-
-            List<string> files = new List<string>
-            {
-                "FrontolServiceAddon.exe",
-                "FrontolService.DAL.dll",
-                "SharpUpdate.dll"
-            };
-
-            SharpUpdateXml.SaveSharpUpdateXml(location, uriFolder, files);
-
         }
 
         #endregion
@@ -189,7 +183,7 @@ namespace FrontolServiceAddon
                 Logger.Log.Info( string.Format("Время изменения: {0}", fileInf.LastWriteTime) );
                 Logger.Log.Info( string.Format("Размер: {0}", fileInf.Length) );
 
-                if (fileInf.LastWriteTime.AddHours(6) < DateTime.Now) //Файл создан более 6 часов назад
+                if (fileInf.LastWriteTime.AddHours(SettingsService.TaskSettings.Interval) < DateTime.Now) //Файл создан более 6 часов назад
                 {
                     RunWorker();
                 }
@@ -210,7 +204,12 @@ namespace FrontolServiceAddon
             if (backgroundWorker.IsBusy != true)
             {
                 // Start the asynchronous operation.
-                backgroundWorker.RunWorkerAsync();                                
+                backgroundWorker.RunWorkerAsync();
+
+                toolStripStatusLabel1.Text = "";
+                ToolStripMenuItemExecute.Enabled = false;
+                toolStripProgressBar1.Visible = true;
+                toolStripProgressBar1.Value = 0;
             }
         }
 
@@ -225,10 +224,7 @@ namespace FrontolServiceAddon
 
         private void ToolStripMenuItemExecute_Click(object sender, EventArgs e)
         {
-            RunWorker();
-            
-            ToolStripMenuItemExecute.Enabled = false;
-            toolStripProgressBar1.Visible = true;
+            RunWorker();                        
         }
 
         private void ToolStripMenuItemCancel_Click(object sender, EventArgs e)
@@ -237,7 +233,7 @@ namespace FrontolServiceAddon
         }
         
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
+        {            
             BackgroundWorker worker = sender as BackgroundWorker;
 
             storeContext.OpenConnection();
@@ -254,7 +250,7 @@ namespace FrontolServiceAddon
                     //Logger.Log.Info("Старт итерации " + String.Format("{0:d}", i));
                     //frontollib.FillListRemain();
                     
-                    storeContext.DeleteRemain();                    
+                    int cnt = storeContext.DeleteRemain();
 
                     //Logger.Log.Info("Конец итерации " + String.Format("{0:d}", i));
 
@@ -262,7 +258,12 @@ namespace FrontolServiceAddon
 
                     if (i % 10 == 0)
                     {
-                        Logger.Log.Info("Конец итерации " + (i /10) + "% ");
+                        //Logger.Log.Info("Конец итерации " + (i /10) + "% ");
+                    }
+
+
+                    if (cnt == 0) {
+                        break;
                     }
                 }
             }
@@ -276,7 +277,7 @@ namespace FrontolServiceAddon
 
                 storeContext.OpenConnection();
                 storeContext.DeleteRemaindCollapsed();
-                storeContext.DeleteReports();
+                //storeContext.DeleteReports();
                 storeContext.CloseConnection();
 
 
@@ -308,7 +309,7 @@ namespace FrontolServiceAddon
             }
             else
             {
-                toolStripStatusLabel1.Text = "Done!";                
+                toolStripStatusLabel1.Text = "Done!";
 
                 notifyIcon.BalloonTipTitle = "Завершение свертки";
                 notifyIcon.BalloonTipText = "Завершена свертка";
@@ -321,6 +322,25 @@ namespace FrontolServiceAddon
         }
 
         #endregion
+
+        #endregion
+
+        #region Update
+
+        private void CreateUpdateFile()
+        {
+            string location = exe_path.Replace(".exe", ".xml");
+            Uri uriFolder = new Uri("http://frontol.chance-ltd.ru/FrontolServiceAddon/");
+
+            List<string> files = new List<string>
+            {
+                "FrontolServiceAddon.exe",
+                "FrontolService.DAL.dll",
+                "SharpUpdate.dll"
+            };
+
+            SharpUpdateXml.SaveSharpUpdateXml(location, uriFolder, files);
+        }
 
         #endregion
         

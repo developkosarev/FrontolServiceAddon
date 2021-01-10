@@ -226,7 +226,7 @@ namespace FrontolService.DAL
             }            
         }
 
-        public void DeleteRemain()
+        public int DeleteRemain()
         {            
             this.GetAllRemain();
 
@@ -261,7 +261,9 @@ namespace FrontolService.DAL
 
                     fbt.Commit();
                 }                                
-            }            
+            }
+
+            return remains.Count();
         }
 
         public void DeleteRemaindCollapsed()

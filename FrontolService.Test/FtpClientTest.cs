@@ -12,14 +12,14 @@ namespace FrontolService.Test
     public class FtpClientTest
     {
         internal const string Url = @"localhost";
-        internal const string User = "dk";
-        internal const string Password = "matrix2";
+        internal const string User = "anonymous";
+        internal const string Password = "anonymous";
 
         internal FtpClient ftpClient;
 
         public FtpClientTest()
         {
-            ftpClient = new FtpClient("ftp://localhost/", "anonymous", "anonymous");
+            ftpClient = new FtpClient("ftp://localhost/", User, Password);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace FrontolService.Test
 
             //Thread.Sleep(8000);
 
-            destinationZipFile = "sprt02.zip";
+            destinationZipFile = @"sprt02.zip";
             result = ftpClient.UploadFile(sourceZipFile, destinationZipFile);
 
             Assert.Equal("226 Transfer complete.\r\n", result);

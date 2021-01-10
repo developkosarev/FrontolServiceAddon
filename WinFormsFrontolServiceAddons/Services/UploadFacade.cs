@@ -18,31 +18,23 @@ namespace FrontolServiceAddon
         public UploadFacade()
         {
             ftpClient = new FtpClient(SettingsService.FtpServerSettings.Url, SettingsService.FtpServerSettings.Login, SettingsService.FtpServerSettings.Password);
-            storeContext = new StoreContext(SettingsService.FirebirdSettings.Database, SettingsService.FirebirdSettings.Login, SettingsService.FirebirdSettings.Password);            
+            storeContext = new StoreContext(SettingsService.FirebirdSettings.Database, SettingsService.FirebirdSettings.Login, SettingsService.FirebirdSettings.Password);
+            
+            sprtFile = SettingsService.FtpServerSettings.FileName;
+            destination = SettingsService.FtpServerSettings.Directory;
         }
 
         private void CreateFileSprt(string source)
-        {
-            Logger.Log.Info("1");
-
-            storeContext.OpenConnection();
-            Logger.Log.Info("2");
-
-            List<StocksResult> stocksResult = storeContext.GetAllStocksResults();
-            Logger.Log.Info("3");
-
-            destination = storeContext.GetFtpParamsResult().Ftpfolder;
-            Logger.Log.Info("4");
-
-            storeContext.CloseConnection();
-            Logger.Log.Info("5");
-
+        {            
+            storeContext.OpenConnection();            
+            List<StocksResult> stocksResult = storeContext.GetAllStocksResults();                       
+            storeContext.CloseConnection();            
             
             string separator = ";";
 
             Logger.Log.Info("Записей " + stocksResult.Count);
 
-            StringBuilder sb = new StringBuilder("Привет мир");
+            StringBuilder sb = new StringBuilder();
 
             int i = 0;
             foreach (var item in stocksResult) 
@@ -59,36 +51,34 @@ namespace FrontolServiceAddon
                 }
                 
                 i++;
-            }
-            Logger.Log.Info("6");
-
-            string sourceTxtFile = string.Format("{0}{1}{2}.txt", source, (object)Path.DirectorySeparatorChar, (object)sprtFile);
-
-            Logger.Log.Info("7");
+            }            
+            string sourceTxtFile = string.Format("{0}{1}{2}.txt", source, (object)Path.DirectorySeparatorChar, (object)this.sprtFile);            
             
             File.WriteAllText(sourceTxtFile, sb.ToString());
         }
 
         private void ZipFileSprt(string source)
         {
-            string sourceTxtFile = string.Format("{0}{1}{2}.txt", source, (object)Path.DirectorySeparatorChar, (object)sprtFile);
-            string destinationZipFile = string.Format("{0}{1}{2}.zip", source, "/", sprtFile);
+            string sourceTxtFile = string.Format("{0}{1}{2}.txt", source, (object)Path.DirectorySeparatorChar, (object)this.sprtFile);
+            string destinationZipFile = string.Format("{0}{1}{2}.zip", source, "/", this.sprtFile);
 
             using (ZipFile zip = new ZipFile())
             {
                 zip.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
-                zip.AddFile(source + "\\" + sprtFile + ".txt", "");
-                zip.Save(source + "\\" + sprtFile + ".zip");
+                zip.AddFile(source + "\\" + this.sprtFile + ".txt", "");
+                zip.Save(source + "\\" + this.sprtFile + ".zip");
             }
         }
 
         public string UploadFileSprt(string source)
         {                        
             CreateFileSprt(source);
-            ZipFileSprt(source);            
+            ZipFileSprt(source);
 
-            string sourceZipFile = string.Format("{0}{1}{2}.zip", source, (object)Path.DirectorySeparatorChar, sprtFile);
-            string destinationZipFile = string.Format("{0}{1}{2}.zip", destination, "/", sprtFile);
+            //this.destination = storeContext.GetFtpParamsResult().Ftpfolder;
+
+            string sourceZipFile = string.Format("{0}{1}{2}.zip", source, (object)Path.DirectorySeparatorChar, this.sprtFile);
+            string destinationZipFile = string.Format("{0}{1}{2}.zip", this.destination, "/", this.sprtFile);
 
             Logger.Log.Info("Старт UploadFile");
             

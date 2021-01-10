@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace FrontolServiceAddon
@@ -25,6 +19,13 @@ namespace FrontolServiceAddon
             textBox4.Text = SettingsService.FtpServerSettings.Url;
             textBox5.Text = SettingsService.FtpServerSettings.Login;
             textBox6.Text = SettingsService.FtpServerSettings.Password;
+            textBox8.Text = SettingsService.FtpServerSettings.Directory;
+            textBox9.Text = SettingsService.FtpServerSettings.FileName;
+
+            textBox7.Text = SettingsService.TaskSettings.Interval.ToString();
+            checkBox1.Checked = SettingsService.TaskSettings.CollapseRemaind;
+            checkBox2.Checked = SettingsService.TaskSettings.DeleteRemaindCollapsed;
+            checkBox3.Checked = SettingsService.TaskSettings.SendToFtp;
         }
 
         private void saveButton_Click(object sender, EventArgs e)
@@ -36,13 +37,16 @@ namespace FrontolServiceAddon
             SettingsService.FtpServerSettings.Url = textBox4.Text;
             SettingsService.FtpServerSettings.Login = textBox5.Text;
             SettingsService.FtpServerSettings.Password = textBox6.Text;
+            SettingsService.FtpServerSettings.Directory = textBox8.Text;
+            SettingsService.FtpServerSettings.FileName = textBox9.Text;
+            
+            SettingsService.TaskSettings.Interval = int.Parse(textBox7.Text);
+            SettingsService.TaskSettings.CollapseRemaind = checkBox1.Checked;
+            SettingsService.TaskSettings.DeleteRemaindCollapsed = checkBox2.Checked;
+            SettingsService.TaskSettings.SendToFtp = checkBox3.Checked;
 
             SettingsService.SaveSettings();            
         }
-
-        private void label6_Click(object sender, EventArgs e)
-        {
-
-        }
+        
     }
 }
